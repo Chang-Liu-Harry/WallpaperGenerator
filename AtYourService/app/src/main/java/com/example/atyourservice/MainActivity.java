@@ -2,6 +2,9 @@ package com.example.atyourservice;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +17,9 @@ import com.example.atyourservice.Models.UnsplashCallback;
 import com.example.atyourservice.Models.UnsplashPhoto;
 
 public class MainActivity extends AppCompatActivity {
+    private ImageView imageView;
+    private TextView tvDescription;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +31,11 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // find UI elements
+        imageView = findViewById(R.id.imageView);
+        tvDescription = findViewById(R.id.tvDescription);
+        progressBar = findViewById(R.id.progressBar);
     }
 
     public void getPhoto(View v) {
