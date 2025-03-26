@@ -1,6 +1,14 @@
 package com.example.atyourservice;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -17,6 +25,10 @@ import com.example.atyourservice.Helpers.UnsplashHelper;
 import com.example.atyourservice.Models.UnsplashCallback;
 import com.example.atyourservice.Models.UnsplashPhoto;
 import com.bumptech.glide.Glide;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
@@ -60,6 +72,61 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void saveImageToGallery(View v) {
+        // Step 1: Obtain the Bitmap from the ImageView
+        imageView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(imageView.getDrawingCache());
+        imageView.setDrawingCacheEnabled(false);
+
+        // Step 2: Determine the storage location
+        ContentResolver contentResolver = getContentResolver();
+        ContentValues contentValues = new ContentValues();
+        String imageName = "image_" + System.currentTimeMillis() + ".jpg";
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, imageName);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+
+        Uri imageUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // For Android 10 and above
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+            imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        } else {
+            // For Android 9 and below
+            File imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File imageFile = new File(imagesDir, imageName);
+            imageUri = Uri.fromFile(imageFile);
+        }
+
+        // Step 3: Save the image
+        try (OutputStream outputStream = contentResolver.openOutputStream(imageUri)) {
+            if (outputStream != null) {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                outputStream.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Step 4: Update the gallery
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, imageUri));
+
+        try (OutputStream outputStream = contentResolver.openOutputStream(imageUri)) {
+            if (outputStream != null) {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                outputStream.flush();
+
+                // Show success message
+                Toast.makeText(MainActivity.this, "Image saved successfully!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            // Show failure message
+            Toast.makeText(MainActivity.this, "Failed to save image. Please try again.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     public void onGenerateClick(View v) {
         // show loading spinner while we fetch the image
