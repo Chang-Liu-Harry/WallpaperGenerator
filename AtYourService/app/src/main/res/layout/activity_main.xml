@@ -43,7 +43,8 @@
         android:backgroundTint="#6A4C8C"
         android:text="Generate ✨"
         android:textColor="#FFFFFF"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:onClick="onGenerateClick" />
 
     <Button
         android:id="@+id/btnSave"
