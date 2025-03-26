@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 // if we successfully fetched img
                 // gran the image and description
                 String imageUrl = photo.getUrls().getRegular();
-                String description = photo.getAlternativeSlugs() != null ?
+                String rawSlug = photo.getAlternativeSlugs() != null ?
                         photo.getAlternativeSlugs().getEn() :
                         "There is no description for this image";
 
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                         .into(imageView);
 
                 // load text
-                tvDescription.setText(description);
+                tvDescription.setText(formatSlug(rawSlug));
 
                 // diable spinner , enable button
                 progressBar.setVisibility(View.GONE);
@@ -100,5 +100,26 @@ public class MainActivity extends AppCompatActivity {
                 v.setEnabled(true);
             }
         });
+    }
+
+    String formatSlug(String slug) {
+        if (slug == null || slug.isEmpty()) return "";
+
+        String[] parts = slug.split("-");
+        if (parts.length <= 1) {
+            return turnToCaps(slug.replace("-", " "));
+        }
+
+        StringBuilder cleaned = new StringBuilder();
+        for (int i = 0; i < parts.length - 1; i++) {
+            cleaned.append(parts[i]).append(" ");
+        }
+
+        return turnToCaps(cleaned.toString().trim());
+    }
+
+    String turnToCaps(String text) {
+        if (text == null || text.isEmpty()) return "";
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 }
